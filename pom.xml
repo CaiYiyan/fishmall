@@ -15,5 +15,8 @@
 		<module>fishmall-order</module>
 		<module>fishmall-product</module>
 		<module>fishmall-ware</module>
+		<module>renren-fast</module>
+		<module>renren-generator</module>
+		<module>fishmall-common</module>
 	</modules>
 </project>

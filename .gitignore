@@ -15,7 +15,27 @@ buildNumber.properties
 **/.mvn
 **/target/
 
+**/.gitignore
+
+# Editor directories and files
 .idea
 .vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.log
+*.class
+*-SNAPSHOT.jar
+*.log.*.gz
+*.lst
+.factorypath
 
-**/.gitignore
+/bin/
+.classpath
+.project
+*.log
+*.iml
+*/META-INF/*
+MANIFEST.MF
+~*.xlsx
