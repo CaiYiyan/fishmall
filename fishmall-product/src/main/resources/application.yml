@@ -4,9 +4,10 @@ spring:
     password: root
     url: jdbc:mysql://192.168.56.10:3306/fishmall_pms
     driver-class-name: com.mysql.cj.jdbc.Driver
-    
 mybatis-plus:
   mapper-location: classpath*:/mapper/**/*.xml
   global-config:
       db-confg:
         id-type: auto
+server:
+  port: 10000
