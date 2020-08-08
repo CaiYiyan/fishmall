@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.yan.fishmall.member.entity.MemberEntity;
+import com.yan.fishmall.member.feign.CouponFeignService;
 import com.yan.fishmall.member.service.MemberService;
 import com.yan.common.utils.PageUtils;
 import com.yan.common.utils.R;
@@ -30,6 +31,18 @@ import com.yan.common.utils.R;
 public class MemberController {
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    CouponFeignService couponFeignService;
+
+    @RequestMapping("/coupons")
+    public R test() {
+        MemberEntity memberEntity = new MemberEntity();
+        memberEntity.setNickname("张三 ");
+        
+        R membercoupons = couponFeignService.membercoupons();
+        return R.ok().put("member", memberEntity).put("coupons", membercoupons.get("coupons"));
+    }
 
     /**
      * 列表
