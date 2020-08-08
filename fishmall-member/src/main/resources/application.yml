@@ -13,7 +13,7 @@ spring:
 mybatis-plus:
   mapper-location: classpath*:/mapper/**/*.xml
   global-config:
-      db-confg:
-        id-type: auto
+    db-confg:
+      id-type: auto
 server:
   port: 8000
