@@ -1,5 +1,7 @@
 <template>
   <div>
+    <el-switch v-model="draggable" active-text="开启拖拽" inactive-text="关闭拖拽"></el-switch>
+    <el-button v-if="draggable" @click="batchSave">批量保存</el-button>
     <el-tree
       :data="menus"
       :props="defaultProps"
@@ -7,7 +9,7 @@
       show-checkbox
       node-key="catId"
       :default-expanded-keys="expandedKey"
-      draggable
+      :draggable="draggable"
       :allow-drop="allowDrop"
       @node-drop="handleDrop"
     >
@@ -60,6 +62,8 @@ export default {
   props: {},
   data() {
     return {
+      pCid: [],
+      draggable: false,
       updateNodes: [],
       maxLevel: 0,
       title: "",
@@ -112,6 +116,22 @@ export default {
         this.menus = data.data;
       });
     },
+    batchSave() {
+      this.$http({
+        url: this.$http.adornUrl("/product/category/update/sort"),
+        method: "post",
+        data: this.$http.adornData(this.updateNodes, false),
+      }).then(({ data }) => {
+        this.$message({
+          message: "菜单顺序等修改成功",
+          type: "success",
+        });
+        this.getMenus();
+        this.expandedKey = this.pCid;
+        this.updateNodes = [];
+        this.maxLevel = 0;
+      });
+    },
     handleDrop(draggingNode, dropNode, dropType, ev) {
       console.log("handleDrop:  ", draggingNode, dropNode, dropType);
       //1. 当前节点最新的父节点id
@@ -127,6 +147,8 @@ export default {
         pCid = dropNode.data.catId;
         siblings = dropNode.childNodes;
       }
+      this.pCid.push(pCid);
+
       //2. 当前拖拽节点的最新顺序
       for (let i = 0; i < siblings.length; i++) {
         if (siblings[i].data.catId == draggingNode.data.catId) {
@@ -151,20 +173,6 @@ export default {
 
       //3. 当前拖拽节点的最新层级
       console.log("updateNodes", this.updateNodes);
-      this.$http({
-        url: this.$http.adornUrl("/product/category/update/sort"),
-        method: "post",
-        data: this.$http.adornData(this.updateNodes, false),
-      }).then(({ data }) => {
-        this.$message({
-          message: "菜单顺序等修改成功",
-          type: "success",
-        });
-        this.getMenus();
-        this.expandedKey = [pCid];
-        this.updateNodes = [];
-        this.maxLevel = 0;
-      });
     },
     updateChildNodeLevel(node) {
       if (node.childNodes.length > 0) {
@@ -185,7 +193,7 @@ export default {
       console.log("allowDrop", draggingNode, dropNode, type);
       this.countNodeLevel(draggingNode.data);
       //当前正在拖动的节点+父节点所在的深度不大于3即可
-      let deep = this.maxLevel - draggingNode.data.catLevel + 1;
+      let deep = Math.abs(this.maxLevel - draggingNode.level) + 1;
       console.log("deep", deep);
 
       if (type == "inner") {
@@ -197,12 +205,12 @@ export default {
     },
     countNodeLevel(node) {
       //找到所有子节点，求出最大深度
-      if (node.children != null && node.children.length > 0) {
-        for (let i = 0; i < node.children.length; i++) {
-          if (node.children[i].catLevel > this.maxLevel) {
-            this.maxLevel = node.children[i].catLevel;
+      if (node.childNodes != null && node.childNodes.length > 0) {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          if (node.childNodes[i].level > this.maxLevel) {
+            this.maxLevel = node.childNodes[i].level;
           }
-          this.countNodeLevel(node.children[i]);
+          this.countNodeLevel(node.childNodes[i]);
         }
       }
     },
