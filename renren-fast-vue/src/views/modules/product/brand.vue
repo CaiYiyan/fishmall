@@ -29,7 +29,11 @@
       <el-table-column type="selection" header-align="center" align="center" width="50"></el-table-column>
       <el-table-column prop="brandId" header-align="center" align="center" label="品牌id"></el-table-column>
       <el-table-column prop="name" header-align="center" align="center" label="品牌名"></el-table-column>
-      <el-table-column prop="logo" header-align="center" align="center" label="品牌logo地址"></el-table-column>
+      <el-table-column prop="logo" header-align="center" align="center" label="品牌logo地址">
+        <template slot-scope="scope">
+          <el-image style="width: 100px; height: 80" :src="scope.row.logo" fit="fill"></el-image>
+        </template>
+      </el-table-column>
       <el-table-column prop="descript" header-align="center" align="center" label="介绍"></el-table-column>
       <el-table-column prop="showStatus" header-align="center" align="center" label="显示状态">
         <template slot-scope="scope">
@@ -114,17 +118,20 @@ export default {
     },
     updateBrandStatus(data) {
       console.log("最新信息", data);
-      let {brandId, showStatus} = data;
+      let { brandId, showStatus } = data;
       //发送请求修改状态
       this.$http({
         url: this.$http.adornUrl("/product/brand/update"),
         method: "post",
-        data: this.$http.adornData({brandId, showStatus: showStatus?1:0}, false),
+        data: this.$http.adornData(
+          { brandId, showStatus: showStatus ? 1 : 0 },
+          false
+        ),
       }).then(({ data }) => {
         this.$message({
           type: "success",
-          message: "状态更新成功"
-        })
+          message: "状态更新成功",
+        });
       });
     },
     // 每页数
