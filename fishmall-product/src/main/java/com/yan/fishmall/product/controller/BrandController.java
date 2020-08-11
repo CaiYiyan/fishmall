@@ -1,10 +1,12 @@
 package com.yan.fishmall.product.controller;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,7 @@ import com.yan.fishmall.product.service.BrandService;
 import com.yan.common.utils.PageUtils;
 import com.yan.common.utils.R;
 
+import javax.validation.Valid;
 
 
 /**
@@ -59,7 +62,19 @@ public class BrandController {
      */
     @RequestMapping("/save")
     //@RequiresPermissions("product:brand:save")
-    public R save(@RequestBody BrandEntity brand){
+    public R save(@Valid @RequestBody BrandEntity brand, BindingResult result){
+        if(result.hasErrors()){
+            Map<String, String> map = new HashMap<>();
+            //1. 获取校验的错误结果
+            result.getFieldErrors().forEach((item) -> {
+                //FieldError获取到错误提示
+                String message = item.getDefaultMessage();
+                //获取错误的属性的名字
+                String field = item.getField();
+                map.put(field, message);
+            });
+            return R.error(400, "提交的数据不合法").put("data", map);
+        }
 		brandService.save(brand);
 
         return R.ok();
