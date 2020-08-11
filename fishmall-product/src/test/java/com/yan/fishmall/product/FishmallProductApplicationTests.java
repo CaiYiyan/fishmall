@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class FishmallProductApplicationTests {
 
 	@Autowired
-	BrandService brandService;
+    BrandService brandService;
 
 	@Test
 	void contextLoads() {
