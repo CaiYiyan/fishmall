@@ -31,6 +31,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * 3.2 开启校验功能@Valid
  * 3.3 给校验的bean
  *
+ * 4. 统一的异常处理 @ControllerAdvice
  */
 @MapperScan("com.yan.fishmall.product.dao")
 @EnableDiscoveryClient
