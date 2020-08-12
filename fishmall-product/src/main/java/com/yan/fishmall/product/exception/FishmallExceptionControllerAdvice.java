@@ -34,6 +34,7 @@ public class FishmallExceptionControllerAdvice {
     @ExceptionHandler(value = Exception.class)
     public R handleException(Throwable throwable) {
 
+        log.error("错误: ", throwable);
         return  R.error(BizCodeEnum.UNKNOW_EXCEPTION.getCode(), BizCodeEnum.UNKNOW_EXCEPTION.getMsg());
     }
 }
