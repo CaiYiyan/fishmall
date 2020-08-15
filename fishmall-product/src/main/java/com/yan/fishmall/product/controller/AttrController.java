@@ -4,9 +4,11 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.yan.fishmall.product.vo.AttrGroupRelationVo;
 import com.yan.fishmall.product.vo.AttrRespVo;
 import com.yan.fishmall.product.vo.AttrVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import com.yan.fishmall.product.entity.AttrEntity;
