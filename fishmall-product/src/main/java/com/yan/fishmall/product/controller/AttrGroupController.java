@@ -6,6 +6,7 @@ import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import com.yan.fishmall.product.entity.AttrEntity;
+import com.yan.fishmall.product.service.AttrAttrgroupRelationService;
 import com.yan.fishmall.product.service.AttrService;
 import com.yan.fishmall.product.service.CategoryService;
 import com.yan.fishmall.product.vo.AttrGroupRelationVo;
@@ -38,6 +39,17 @@ public class AttrGroupController {
 
     @Autowired
     private AttrService attrService;
+
+    @Autowired
+    private AttrAttrgroupRelationService relationService;
+
+    ///product/attrgroup/attr/relation
+    @PostMapping("/attr/relation")
+    public R addRelation(@RequestBody List<AttrGroupRelationVo> vos){
+
+        relationService.saveBatch(vos);
+        return R.ok();
+    }
 
     ///product/attrgroup/{attrgroupId}/attr/relation
     @GetMapping("/{attrgroupId}/attr/relation")
