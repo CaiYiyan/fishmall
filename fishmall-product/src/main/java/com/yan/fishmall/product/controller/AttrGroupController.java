@@ -10,6 +10,7 @@ import com.yan.fishmall.product.service.AttrAttrgroupRelationService;
 import com.yan.fishmall.product.service.AttrService;
 import com.yan.fishmall.product.service.CategoryService;
 import com.yan.fishmall.product.vo.AttrGroupRelationVo;
+import com.yan.fishmall.product.vo.AttrGroupWithAttrsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import com.yan.fishmall.product.service.AttrGroupService;
 import com.yan.common.utils.PageUtils;
 import com.yan.common.utils.R;
 
+import javax.websocket.server.PathParam;
 
 
 /**
@@ -50,6 +52,16 @@ public class AttrGroupController {
         relationService.saveBatch(vos);
         return R.ok();
     }
+
+    ///product/attrgroup/{catelogId}/withattr
+    @GetMapping("/{catelogId}/withattr")
+    public R getAttrGroupWithAttrs(@PathVariable("catelogId") Long catelogId){
+        //1. 查出当前分类下的所有属性分组
+        //2. 查出每个属性分组的所有属性
+        List<AttrGroupWithAttrsVo> vos = attrGroupService.getAttrGroupWithAttrsByCatelogId(catelogId);
+        return R.ok().put("data",vos);
+    }
+
 
     ///product/attrgroup/{attrgroupId}/attr/relation
     @GetMapping("/{attrgroupId}/attr/relation")
