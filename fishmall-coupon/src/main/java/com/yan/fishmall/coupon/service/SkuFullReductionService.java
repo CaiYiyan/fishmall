@@ -1,6 +1,7 @@
 package com.yan.fishmall.coupon.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yan.common.to.SkuReductionTo;
 import com.yan.common.utils.PageUtils;
 import com.yan.fishmall.coupon.entity.SkuFullReductionEntity;
 
@@ -16,5 +17,7 @@ import java.util.Map;
 public interface SkuFullReductionService extends IService<SkuFullReductionEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    void saveSkuReduction(SkuReductionTo reductionTo);
 }
 
