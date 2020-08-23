@@ -20,5 +20,6 @@
         <module>fishmall-common</module>
         <module>fishmall-gateway</module>
         <module>fishmall-third-party</module>
+        <module>fishmall-search</module>
     </modules>
 </project>
