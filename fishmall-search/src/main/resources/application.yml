@@ -6,4 +6,4 @@ spring:
   application:
     name: fishmall-search
 server:
-  port: 14000
+  port: 12000
