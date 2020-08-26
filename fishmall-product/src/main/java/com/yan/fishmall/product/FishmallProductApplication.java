@@ -44,6 +44,14 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * 4. 统一的异常处理
  * 4.1 编写异常处理类，使用@ControllerAdvice
  * 4.2 使用@ExceptionHandler标注方法可以处理的异常
+ *
+ * 5. 模板引擎
+ * 5.1 thymeleaf-starter：关闭缓存
+ * 5.2 静态资源都放在static文件夹下就可以按照路径直接访问
+ * 5.3 页面放在template下，直接访问SpringBoot，访问项目的时候，默认会找index
+ * 5.4 页面修改不重启服务器实时更新
+ * 5.4.1 引入dev-tools
+ * 5.4.2 修改完页面 ctrl+shift+f9 重新编译
  */
 @EnableFeignClients(basePackages = "com.yan.fishmall.product.feign")
 @MapperScan("com.yan.fishmall.product.dao")
