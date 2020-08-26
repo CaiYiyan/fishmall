@@ -3,6 +3,7 @@ package com.yan.fishmall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yan.common.utils.PageUtils;
 import com.yan.fishmall.product.entity.CategoryEntity;
+import com.yan.fishmall.product.vo.Catalog2Vo;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,8 @@ public interface CategoryService extends IService<CategoryEntity> {
     void updateCascade(CategoryEntity category);
 
     List<CategoryEntity> getLevel1Category();
+
+    Map<String, List<Catalog2Vo>> getCatalogJson();
 
 }
 
