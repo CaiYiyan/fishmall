@@ -1,8 +1,11 @@
 package com.yan.fishmall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.yan.fishmall.product.service.CategoryBrandRelationService;
 import com.yan.fishmall.product.vo.Catalog2Vo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,12 +25,16 @@ import com.yan.fishmall.product.dao.CategoryDao;
 import com.yan.fishmall.product.entity.CategoryEntity;
 import com.yan.fishmall.product.service.CategoryService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
 
     @Autowired
     CategoryBrandRelationService categoryBrandRelationService;
+
+    @Autowired
+    StringRedisTemplate redisTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -107,8 +114,31 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return  categoryEntities;
     }
 
+    //TODO 产生堆外内存溢出：OutOfDirectMemoryError
+    //1. springboot2.0以后默认使用lettuce作为操作redis的客户端，它使用netty进行网络通信
+    //2. lettuce的bug导致堆外内存溢出，netty如果没有指定堆外内存、默认使用-Xmx100m
+    //   可以通过-Dio.netty.maxDirectMemory进行设置
+    //解决方案：1. 升级lettuce客户端  2. 切换使用jedis
+    //lettuce、jedis操作redis的底层客户端，Spring再次封装redisTemplate
     @Override
     public Map<String, List<Catalog2Vo>> getCatalogJson() {
+        //给缓存中放json字符串，拿出的json字符串，还要逆转为能用的对象类型，【序列化与反序列化】
+        //1. 加入缓存逻辑，缓存中存的数据是json字符串
+        String catalogJSON = redisTemplate.opsForValue().get("catalogJSON");
+        if (StringUtils.isEmpty(catalogJSON)){
+            //2. 缓存中没有
+            Map<String, List<Catalog2Vo>> catalogJsonFromDb = getCatalogJsonFromDb();
+            //3. 查到的数据放入缓存，将对象转为json放在缓存中
+            String s = JSON.toJSONString(catalogJsonFromDb);
+            redisTemplate.opsForValue().set("catalogJSON",  s);
+            return catalogJsonFromDb;
+        }
+        //转为我们指定的对象
+        Map<String, List<Catalog2Vo>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catalog2Vo>>>(){});
+        return result;
+    }
+    //从数据库查询并封装分类数据
+    public Map<String, List<Catalog2Vo>> getCatalogJsonFromDb() {
 
         /**
          * 1. 将数据库的多次查询变为一次
