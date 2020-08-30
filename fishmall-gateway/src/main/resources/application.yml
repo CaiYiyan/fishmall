@@ -47,7 +47,10 @@ spring:
         filters:
         - RewritePath=/api/(?<segment>.*), /renren-fast/$\{segment}
 
-
+      - id: fishmall_host_route
+        uri: lb://fishmall-product
+        predicates:
+          - Host=**.fishmall.com
 
 # 前端项目. /api        
 # GatewayFilter -> RewirtePath GatewayFilter Facotry
