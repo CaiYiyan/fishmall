@@ -3,15 +3,13 @@ package com.yan.fishmall.product.web;
 import com.yan.fishmall.product.entity.CategoryEntity;
 import com.yan.fishmall.product.service.CategoryService;
 import com.yan.fishmall.product.vo.Catalog2Vo;
-import org.redisson.api.RLock;
-import org.redisson.api.RReadWriteLock;
-import org.redisson.api.RSemaphore;
-import org.redisson.api.RedissonClient;
+import org.redisson.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -82,7 +80,7 @@ public class IndexController {
     //写+写：阻塞方式
     //读+写：有读锁，写也需要等待
     //只要有写的存在，都必须等待
-    @GetMapping("write")
+    @GetMapping("/write")
     @ResponseBody
     public String writeValue(){
 
@@ -106,7 +104,7 @@ public class IndexController {
         return s;
     }
 
-    @GetMapping("read")
+    @GetMapping("/read")
     @ResponseBody
     public String readValue(){
 
@@ -134,7 +132,7 @@ public class IndexController {
      * 3车位
      * 信号量可用作分布式限流
      */
-    @GetMapping("park")
+    @GetMapping("/park")
     @ResponseBody
     public String park() throws InterruptedException {
         RSemaphore park = redisson.getSemaphore("park");
@@ -142,17 +140,39 @@ public class IndexController {
         if(b){
             //执行业务
         } else {
-            return "error"
+            return "error";
         }
         return "ok=>" + b;
     }
 
-    @GetMapping("go")
+    @GetMapping("/go")
     @ResponseBody
     public String go() throws InterruptedException {
         RSemaphore park = redisson.getSemaphore("park");
         park.release();//获取一个值
 
         return "ok";
+    }
+
+    /**
+     * 放假，锁门
+     */
+    @GetMapping("/lockDoor")
+    @ResponseBody
+    public String lockDoor() throws InterruptedException {
+
+        RCountDownLatch door = redisson.getCountDownLatch("door");
+        door.trySetCount(5);
+        door.await();//等待闭锁都完成
+
+        return "放假了...";
+    }
+
+    @GetMapping("/gogogo/{id}")
+    @ResponseBody
+    public String gogogo(@PathVariable("id") Long id){
+        RCountDownLatch door = redisson.getCountDownLatch("door");
+        door.countDown();//计数减一
+        return id+"班的人走了..";
     }
 }
