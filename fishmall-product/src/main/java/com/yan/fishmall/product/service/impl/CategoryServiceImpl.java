@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.yan.fishmall.product.service.CategoryBrandRelationService;
 import com.yan.fishmall.product.vo.Catalog2Vo;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -35,6 +37,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     @Autowired
     StringRedisTemplate redisTemplate;
 
+    @Autowired
+    RedissonClient redisson;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<CategoryEntity> page = this.page(new Query<CategoryEntity>().getPage(params),
@@ -51,12 +56,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
         //2.1 找到所有的一级分类
         List<CategoryEntity> level1Menus = entities.stream().filter(categoryEntity ->
-            categoryEntity.getParentCid() == 0
+                categoryEntity.getParentCid() == 0
         ).map((menu) -> {
             menu.setChildren(getChildren(menu, entities));
             return menu;
         }).sorted((menu1, menu2) -> {
-            return (menu1.getSort() == null? 0 : menu1.getSort()) - (menu2.getSort() == null? 0 : menu2.getSort());
+            return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
         }).collect(Collectors.toList());
 
         return level1Menus;
@@ -72,7 +77,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             return categoryEntity;
         }).sorted((menu1, menu2) -> {
             //2. 菜单的排序
-            return (menu1.getSort() == null? 0 : menu1.getSort()) - (menu2.getSort() == null? 0 : menu2.getSort());
+            return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
         }).collect(Collectors.toList());
         return children;
     }
@@ -90,13 +95,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<Long> paths = new ArrayList<>();
         List<Long> parentPath = findParentPath(catelogId, paths);
 
-        Collections.reverse(parentPath);;
-
+        Collections.reverse(parentPath);
+        
         return parentPath.toArray(new Long[parentPath.size()]);
     }
 
     /**
      * 级联更新所有关联的数据
+     *
      * @param category
      */
     @Transactional
@@ -105,12 +111,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         this.updateById(category);
         categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
 
+        //同时修改缓存中的数据
+        //redis.del("catalogJSON")，等待下次主动查询进行更新
     }
 
     @Override
     public List<CategoryEntity> getLevel1Category() {
         List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
-        return  categoryEntities;
+        return categoryEntities;
     }
 
     //TODO 产生堆外内存溢出：OutOfDirectMemoryError
@@ -131,17 +139,42 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
         //1. 加入缓存逻辑，缓存中存的数据是json字符串
         String catalogJSON = redisTemplate.opsForValue().get("catalogJSON");
-        if (StringUtils.isEmpty(catalogJSON)){
+        if (StringUtils.isEmpty(catalogJSON)) {
             //2. 缓存中没有，查询数据库
             System.out.println("缓存不命中...将要查询数据库...");
-            Map<String, List<Catalog2Vo>> catalogJsonFromDb = getCatalogJsonFromDbWithRedisLock();
+            Map<String, List<Catalog2Vo>> catalogJsonFromDb = getCatalogJsonFromDbWithRedissonLock();
             return catalogJsonFromDb;
         }
         System.out.println("缓存命中...直接返回...");
         //转为我们指定的对象
-        Map<String, List<Catalog2Vo>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catalog2Vo>>>(){});
+        Map<String, List<Catalog2Vo>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catalog2Vo>>>() {
+        });
         return result;
     }
+
+    /**
+     * 缓存里面的数据如何与数据库保持一致
+     * 缓存数据一致性
+     * 1. 双写模式
+     * 2. 失效模式
+     * @return
+     */
+    public Map<String, List<Catalog2Vo>> getCatalogJsonFromDbWithRedissonLock() {
+
+        //1. 锁的名字，锁的粒度，越细越快。
+        //锁的粒度：具体缓存的是某个数据，11号商品：product-11-lock
+        RLock lock = redisson.getLock("catalogJson-lock");
+
+        Map<String, List<Catalog2Vo>> dataFromDb = new HashMap<>();
+        try {
+            dataFromDb = getDataFromDb();
+        } finally {
+            lock.unlock();
+        }
+
+        return dataFromDb;
+    }
+
 
     public Map<String, List<Catalog2Vo>> getCatalogJsonFromDbWithRedisLock() {
 
@@ -186,7 +219,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         //只要是通一把锁，就能锁住需要这个锁的所有线程
         //1. synchronized (this)：SpringBoot所有组件在容器中都是单例的
         //TODO 本地锁：synchronized、JUC（lock），在分布式情况下，想要锁住所有，必须使用分布式锁
-        synchronized (this){
+        synchronized (this) {
             //得到锁以后，应该再去缓存中确定一次，没有才继续查询
             return getDataFromDb();
         }
@@ -253,7 +286,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         //收集当前节点id
         paths.add(catelogId);
         CategoryEntity byId = this.getById(catelogId);
-        if(byId.getParentCid() != 0){
+        if (byId.getParentCid() != 0) {
             findParentPath(byId.getParentCid(), paths);
         }
         return paths;
