@@ -8,6 +8,7 @@ import com.yan.fishmall.product.entity.BrandEntity;
 import com.yan.fishmall.product.service.BrandService;
 
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -22,6 +23,13 @@ class FishmallProductApplicationTests {
 	@Autowired
 	StringRedisTemplate stringRedisTemplate;
 
+	@Autowired
+	RedissonClient redissonClient;
+
+	@Test
+	public void redisson(){
+		System.out.println(redissonClient);
+	}
 	@Test
 	public void testStringRedisTemplate(){
 		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
