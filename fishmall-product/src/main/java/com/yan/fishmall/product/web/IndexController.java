@@ -5,6 +5,7 @@ import com.yan.fishmall.product.service.CategoryService;
 import com.yan.fishmall.product.vo.Catalog2Vo;
 import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
+import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -126,5 +127,32 @@ public class IndexController {
         }
 
         return s;
+    }
+
+    /**
+     * 车库停车
+     * 3车位
+     * 信号量可用作分布式限流
+     */
+    @GetMapping("park")
+    @ResponseBody
+    public String park() throws InterruptedException {
+        RSemaphore park = redisson.getSemaphore("park");
+        boolean b = park.tryAcquire();//获取一个值
+        if(b){
+            //执行业务
+        } else {
+            return "error"
+        }
+        return "ok=>" + b;
+    }
+
+    @GetMapping("go")
+    @ResponseBody
+    public String go() throws InterruptedException {
+        RSemaphore park = redisson.getSemaphore("park");
+        park.release();//获取一个值
+
+        return "ok";
     }
 }
