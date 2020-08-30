@@ -7,6 +7,7 @@ import com.yan.fishmall.product.vo.Catalog2Vo;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -115,8 +116,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         //redis.del("catalogJSON")，等待下次主动查询进行更新
     }
 
+    //每一个需要缓存的数据我们都来指定要放到哪个名字的缓存，【缓存的分区（按照业务类型分）】
+    @Cacheable({"category"})  //代表当前方法的结果需要缓存，如果缓存中有，方法不用调用；如果缓存中没有，调用方法，最后将方法结果放入缓存
     @Override
     public List<CategoryEntity> getLevel1Category() {
+        System.out.println("getLevel1Categorys..... ");
         List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
         return categoryEntities;
     }

@@ -3,6 +3,7 @@ package com.yan.fishmall.product;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
@@ -59,7 +60,20 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * 6.3 使用SpringBoot自动配置好的StringRedisTemplate来操作redis
  *
  * 7. 整合redisson作为分布式锁等功能框架
+ * 7.1 引入依赖
+ * 7.2 配置redisson，Config给容器配置一个RedissonClient实例即可
+ * 7.3 参考文档使用
+ *
+ * 8. 整合SpringCache简化缓存开发
+ * 8.1 引入依赖：spring-boot-starter-cache，spring-boot-starter-data-redis
+ * 8.2 写配置
+ * 8.2.1 自动配置了哪些：CacheAutoConfiguration会导入RedisCacheConfiguration，自动配好了缓存管理器RedisCacheManager
+ * 8.2.2 配置使用redis作为缓存，application.yml
+ * 8.3 测试使用缓存
+ * 8.3.1 开启缓存功能：@EnableCaching
+ * 8.3.2 使用缓存注解
  */
+@EnableCaching
 @EnableFeignClients(basePackages = "com.yan.fishmall.product.feign")
 @MapperScan("com.yan.fishmall.product.dao")
 @EnableDiscoveryClient
