@@ -33,7 +33,7 @@ public class IndexController {
     public String IndexPage(Model model){
 
         //TODO 1. 查出所有的一级分类
-        List<CategoryEntity> categoryEntities = categoryService.getLevel1Category();
+        List<CategoryEntity> categoryEntities = categoryService.getLevel1Categorys();
 
         //视图解析器进行拼串
         //classpath:/template/xxx.html
