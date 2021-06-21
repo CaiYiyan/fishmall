@@ -1,7 +1,7 @@
 package com.yan.fishmall.search;
 
 import com.alibaba.fastjson.JSON;
-import com.yan.fishmall.search.config.FIshmallElasticSearchConfig;
+import com.yan.fishmall.search.config.FishmallElasticSearchConfig;
 import lombok.Data;
 import lombok.ToString;
 import org.apache.lucene.index.Term;
@@ -78,7 +78,7 @@ class FishmallSearchApplicationTests {
 
 
         //2. 执行检索
-        SearchResponse searchResponse = client.search(searchRequest, FIshmallElasticSearchConfig.COMMON_OPTIONS);
+        SearchResponse searchResponse = client.search(searchRequest, FishmallElasticSearchConfig.COMMON_OPTIONS);
 
         //3. 分析结果 searchResponse
         System.out.println(searchResponse.toString());
@@ -124,7 +124,7 @@ class FishmallSearchApplicationTests {
         indexRequest.source(jsonString, XContentType.JSON);//要保存的内容
 
         //执行操作
-        IndexResponse index = client.index(indexRequest, FIshmallElasticSearchConfig.COMMON_OPTIONS);
+        IndexResponse index = client.index(indexRequest, FishmallElasticSearchConfig.COMMON_OPTIONS);
 
         //提取有用的响应数据
         System.out.println(index);

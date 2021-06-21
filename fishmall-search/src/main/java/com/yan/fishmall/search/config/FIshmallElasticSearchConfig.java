@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
  * 3. 参照官方API
  */
 @Configuration
-public class FIshmallElasticSearchConfig {
+public class FishmallElasticSearchConfig {
 
     public static final RequestOptions COMMON_OPTIONS;
     static {

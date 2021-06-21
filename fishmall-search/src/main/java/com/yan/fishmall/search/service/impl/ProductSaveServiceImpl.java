@@ -2,7 +2,7 @@ package com.yan.fishmall.search.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.yan.common.to.es.SkuEsModel;
-import com.yan.fishmall.search.config.FIshmallElasticSearchConfig;
+import com.yan.fishmall.search.config.FishmallElasticSearchConfig;
 import com.yan.fishmall.search.constant.EsConstant;
 import com.yan.fishmall.search.service.ProductSaveService;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +43,7 @@ public class ProductSaveServiceImpl implements ProductSaveService {
             indexRequest.source(s, XContentType.JSON);
             bulkRequest.add(indexRequest);
         }
-        BulkResponse bulk = restHighLevelClient.bulk(bulkRequest, FIshmallElasticSearchConfig.COMMON_OPTIONS);
+        BulkResponse bulk = restHighLevelClient.bulk(bulkRequest, FishmallElasticSearchConfig.COMMON_OPTIONS);
         //TODO 如果批量错误
         boolean b = bulk.hasFailures();
         List<String> collect = Arrays.stream(bulk.getItems()).map(item -> {
