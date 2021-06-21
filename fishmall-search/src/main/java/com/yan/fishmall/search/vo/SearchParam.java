@@ -29,6 +29,6 @@ public class SearchParam {
     private List<Long> brandId;//按照品牌进行筛选，可多选 &brandId=1&brandId=2
     private List<String> attrs;//按照属性进行筛选，可多选
 
-    private Integer pageNum;//页码
+    private Integer pageNum = 1;//页码
 
 }
