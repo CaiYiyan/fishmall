@@ -22,20 +22,20 @@ public class SearchResult {
 
     @Data
     public static class BrandVo {
-        private Integer brandId;
+        private Long brandId;
         private String brandName;
         private String brandImg;
     }
 
     @Data
     public static class CatalogVo {
-        private Integer catalogId;
+        private Long catalogId;
         private String catalogName;
     }
 
     @Data
     public static class AttrVo {
-        private Integer attrId;
+        private Long attrId;
         private String attrName;
         private List<String> attrValue;
     }
