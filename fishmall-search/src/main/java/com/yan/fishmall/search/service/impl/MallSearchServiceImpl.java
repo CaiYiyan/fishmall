@@ -7,7 +7,6 @@ import com.yan.fishmall.search.constant.EsConstant;
 import com.yan.fishmall.search.service.MallSearchService;
 import com.yan.fishmall.search.vo.SearchParam;
 import com.yan.fishmall.search.vo.SearchResult;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -18,8 +17,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ParsedNested;
@@ -287,8 +284,14 @@ public class MallSearchServiceImpl implements MallSearchService {
         long total = hits.getTotalHits().value;
         result.setTotal(total);
         //7. 分页信息-总页码
-        int totalPage = total % EsConstant.PRODUCT_PAGESIZE == 0? (int)(total/EsConstant.PRODUCT_PAGESIZE) : (int)(total/EsConstant.PRODUCT_PAGESIZE + 1);
-        result.setTotalPage(totalPage);
+        int totalPages = total % EsConstant.PRODUCT_PAGESIZE == 0? (int)(total/EsConstant.PRODUCT_PAGESIZE) : (int)(total/EsConstant.PRODUCT_PAGESIZE + 1);
+        result.setTotalPages(totalPages);
+
+        List<Integer> pageNavs = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageNavs.add(i);
+        }
+        result.setPageNavs(pageNavs);
 
         return result;
     }
