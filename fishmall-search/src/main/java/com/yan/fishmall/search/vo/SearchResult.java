@@ -3,6 +3,7 @@ package com.yan.fishmall.search.vo;
 import com.yan.common.to.es.SkuEsModel;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -21,7 +22,7 @@ public class SearchResult {
     private List<CatalogVo> catalogs;//当前查询到的结果，所有涉及到的分类
     private List<AttrVo> attrs;//当前查询到的结果，所有涉及到的属性
 
-    private List<NavVo> navs;
+    private List<NavVo> navs = new ArrayList<>();
 
     @Data
     public static class NavVo {

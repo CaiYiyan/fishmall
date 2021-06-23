@@ -9,6 +9,7 @@ import com.yan.fishmall.search.constant.EsConstant;
 import com.yan.fishmall.search.feign.ProductFeignService;
 import com.yan.fishmall.search.service.MallSearchService;
 import com.yan.fishmall.search.vo.AttrResponseVo;
+import com.yan.fishmall.search.vo.BrandVo;
 import com.yan.fishmall.search.vo.SearchParam;
 import com.yan.fishmall.search.vo.SearchResult;
 import org.apache.lucene.search.join.ScoreMode;
@@ -321,23 +322,53 @@ public class MallSearchServiceImpl implements MallSearchService {
                 }
 
                 //2. 取消了面包屑之后
-                String encode = null;
-                try {
-                    encode = URLEncoder.encode(attr, "UTF-8");
-                    encode = encode.replace("+","%20");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                String replace = param.get_queryString().replace("&attrs=" + encode, "");
+                String replace = replaceQueryString(param, attr, "attrs");
                 navVo.setLink("http://search.fishmall.com/list.html?"+ replace);
 
                 return navVo;
             }).collect(Collectors.toList());
-            result.setNavs(navs);
 
+
+
+            result.setNavs(navs);
         }
 
+        //品牌
+        if (param.getBrandId() != null && param.getBrandId().size() > 0) {
+            List<SearchResult.NavVo> navs = result.getNavs();
+            SearchResult.NavVo navVo = new SearchResult.NavVo();
+
+            navVo.setNavName("品牌");
+            R r = productFeignService.brandsInfo(param.getBrandId());
+            if (r.getCode() == 0) {
+                List<BrandVo> brand = r.getData("brand", new TypeReference<List<BrandVo>>() {
+                });
+                StringBuffer buffer = new StringBuffer();
+                String replace = "";
+                for (BrandVo brandVo: brand) {
+                    buffer.append(brandVo.getBrandName() + ";");
+                    replace = replaceQueryString(param, brandVo.getBrandId() + "" , "brandId");
+                }
+                navVo.setNavValue(buffer.toString());
+                navVo.setLink("http://search.fishmall.com/list.html?"+ replace);
+            }
+            navs.add(navVo);
+        }
+        //todo 分类
+
         return result;
+    }
+
+    private String replaceQueryString(SearchParam param, String value, String key) {
+        String encode = null;
+        try {
+            encode = URLEncoder.encode(value, "UTF-8");
+            encode = encode.replace("+","%20"); //浏览器对空格编码和java不一样
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        String replace = param.get_queryString().replace("&" + key + "=" + encode, "");
+        return replace;
     }
 
 }
