@@ -1,10 +1,14 @@
 package com.yan.fishmall.search.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.yan.common.to.es.SkuEsModel;
+import com.yan.common.utils.R;
 import com.yan.fishmall.search.config.FishmallElasticSearchConfig;
 import com.yan.fishmall.search.constant.EsConstant;
+import com.yan.fishmall.search.feign.ProductFeignService;
 import com.yan.fishmall.search.service.MallSearchService;
+import com.yan.fishmall.search.vo.AttrResponseVo;
 import com.yan.fishmall.search.vo.SearchParam;
 import com.yan.fishmall.search.vo.SearchResult;
 import org.apache.lucene.search.join.ScoreMode;
@@ -33,6 +37,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,6 +48,10 @@ public class MallSearchServiceImpl implements MallSearchService {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Autowired
+    ProductFeignService productFeignService;
+
     //去es进行检索
     @Override
     public SearchResult search(SearchParam param) {
@@ -292,6 +302,40 @@ public class MallSearchServiceImpl implements MallSearchService {
             pageNavs.add(i);
         }
         result.setPageNavs(pageNavs);
+
+        //构建面包屑导航功能
+        if (param.getAttrs() != null && param.getAttrs().size() > 0) {
+            List<SearchResult.NavVo> navs = param.getAttrs().stream().map(attr -> {
+                //1. 分析每个attrs传过来的查询参数值
+                SearchResult.NavVo navVo = new SearchResult.NavVo();
+                String[] s = attr.split("_");
+                navVo.setNavValue(s[1]);
+                R r = productFeignService.attrInfo(Long.parseLong(s[0]));
+                if (r.getCode() == 0) {
+                    AttrResponseVo data = r.getData("attr", new TypeReference<AttrResponseVo>() {
+                    });
+                    data.getAttrName();
+                    navVo.setNavName(data.getAttrName());
+                } else {
+                    navVo.setNavName(s[0]);
+                }
+
+                //2. 取消了面包屑之后
+                String encode = null;
+                try {
+                    encode = URLEncoder.encode(attr, "UTF-8");
+                    encode = encode.replace("+","%20");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                String replace = param.get_queryString().replace("&attrs=" + encode, "");
+                navVo.setLink("http://search.fishmall.com/list.html?"+ replace);
+
+                return navVo;
+            }).collect(Collectors.toList());
+            result.setNavs(navs);
+
+        }
 
         return result;
     }
