@@ -50,7 +50,7 @@ spring:
       - id: fishmall_host_route
         uri: lb://fishmall-product
         predicates:
-          - Host=fishmall.com
+          - Host=fishmall.com,item.fishmall.com
 
       - id: fishmall_search_route
         uri: lb://fishmall-search
